@@ -8,5 +8,14 @@
     <h1>Simpler framework at work!</h1>
 
     <p><%= @time %></p>
+    <ul>
+      <% if @tests && @tests.any? %>
+        <% @tests.each do |test| %>
+          <%= test.title %>
+        <% end %>
+      <% else %>
+        <p>No tests available</p>
+      <% end %>
+    </ul>
   </body>
 </html>

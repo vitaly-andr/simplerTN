@@ -19,6 +19,8 @@ module Simpler
     def bootstrap!
       setup_database
       require_app
+      create_tables_if_not_exists
+      seed_data_if_needed
       require_routes
     end
 
@@ -48,6 +50,56 @@ module Simpler
       database_config = YAML.load_file(Simpler.root.join('config/database.yml'))
       database_config['database'] = Simpler.root.join(database_config['database'])
       @db = Sequel.connect(database_config)
+    end
+
+    def create_tables_if_not_exists
+      @db.create_table?(:categories) do
+        primary_key :id
+        String :title, null: false
+      end
+
+      @db.create_table?(:tests) do
+        primary_key :id
+        String :title, null: false
+        Integer :level, default: 0
+        foreign_key :category_id, :categories
+      end
+    end
+
+    def seed_data_if_needed
+      return if Test.count > 0
+
+      create_category('Backend')
+      create_category('Frontend')
+      create_category('DevOps')
+
+      create_test('Ruby Basics', 1, 'Backend')
+      create_test('Ruby Advanced', 2, 'Backend')
+      create_test('JavaScript Basics', 1, 'Frontend')
+      create_test('JavaScript Advanced', 2, 'Frontend')
+      create_test('Docker Basics', 1, 'DevOps')
+      create_test('Kubernetes Advanced', 2, 'DevOps')
+
+      # Устанавливаем ID для одного из тестов
+      test = Test.find(title: 'Ruby Basics')
+      test.update(id: 101) if test
+    end
+
+    def create_category(title)
+      Category.find_or_create(title: title)
+    rescue Sequel::ValidationFailed => e
+      puts "Category creation failed: #{e.message}"
+    end
+
+    def create_test(title, level, category_title)
+      category = Category.find(title: category_title)
+      unless category
+        puts "Category with title '#{category_title}' not found."
+        return
+      end
+      Test.find_or_create(title: title, level: level, category: category)
+    rescue Sequel::ValidationFailed => e
+      puts "Test creation failed: #{e.message}"
     end
 
     def make_response(controller, action)
