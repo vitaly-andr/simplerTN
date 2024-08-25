@@ -3,6 +3,7 @@ require 'singleton'
 require 'sequel'
 require_relative 'router'
 require_relative 'controller'
+require_relative 'errors/route_not_found_error'
 
 module Simpler
   class Application
@@ -34,6 +35,8 @@ module Simpler
       action = route.action
 
       make_response(controller, action)
+    rescue RouteNotFoundError
+      not_found_response(env)
     end
 
     private
@@ -105,6 +108,13 @@ module Simpler
     def make_response(controller, action)
       controller.make_response(action)
     end
+  def not_found_response(env)
+    response = Rack::Response.new
+    response.status = 404
+    response['Content-Type'] = 'text/plain'
+    response.write("404 Not Found: The requested URL #{env['PATH_INFO']} was not found on this server.")
+    response.finish
+  end
 
   end
 end

@@ -18,15 +18,8 @@ module Simpler
     def route_for(env)
       method = env['REQUEST_METHOD'].downcase.to_sym
       path = env['PATH_INFO']
-      route = @routes.find { |route| route.match?(method, path) }
+      @routes.find { |route| route.match?(method, path) } || raise(RouteNotFoundError)
 
-      if route.nil?
-        puts "No route found for #{method} #{path}"
-      else
-        puts "Route found: #{route.controller}##{route.action} for #{method} #{path}"
-      end
-
-      route
     end
 
     private
