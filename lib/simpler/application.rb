@@ -3,11 +3,15 @@ require 'singleton'
 require 'sequel'
 require_relative 'router'
 require_relative 'controller'
+require_relative 'errors/route_not_found_error'
+require_relative 'database_initialization' # Модуль создания таблиц и seed
+
 
 module Simpler
   class Application
 
     include Singleton
+    include DatabaseInitialization
 
     attr_reader :db
 
@@ -19,6 +23,8 @@ module Simpler
     def bootstrap!
       setup_database
       require_app
+      create_tables_if_not_exists
+      seed_data_if_needed
       require_routes
     end
 
@@ -28,10 +34,14 @@ module Simpler
 
     def call(env)
       route = @router.route_for(env)
+      env['simpler.route_params'] = route.params(env['PATH_INFO'])
+
       controller = route.controller.new(env)
       action = route.action
 
       make_response(controller, action)
+    rescue RouteNotFoundError
+      not_found_response(env)
     end
 
     private
@@ -53,6 +63,13 @@ module Simpler
     def make_response(controller, action)
       controller.make_response(action)
     end
+  def not_found_response(env)
+    response = Rack::Response.new
+    response.status = 404
+    response['Content-Type'] = 'text/plain'
+    response.write("404 Not Found: The requested URL #{env['PATH_INFO']} was not found on this server.")
+    response.finish
+  end
 
   end
 end
