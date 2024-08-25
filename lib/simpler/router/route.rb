@@ -12,10 +12,7 @@ module Simpler
       end
 
       def match?(method, path)
-        puts "Checking route: #{@method} #{@path[:regexp]} against #{method} #{path}"
-        match_data = @path[:regexp].match(path)
-        puts "Match data: #{match_data.inspect}"
-        match_data && @method == method
+        @method == method && @path[:regexp].match(path)
       end
       def params(path)
         match_data = @path[:regexp].match(path)

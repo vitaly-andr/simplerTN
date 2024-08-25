@@ -18,8 +18,6 @@ class TestsController < Simpler::Controller
   end
 
   def show
-    puts "Params: #{params.inspect}"  # Выводим все параметры в консоль для отладки и демонстрации по заданию
-
     @test = Test.where(id: params[:id].to_i).first #метод find выдавал ошибку и сделал так
   end
 

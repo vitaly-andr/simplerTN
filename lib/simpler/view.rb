@@ -39,13 +39,10 @@ module Simpler
       full_path = Simpler.root.join(VIEW_BASE_PATH, "#{path}.html.erb")
 
       unless File.exist?(full_path)
-        # Если файл не существует, переключаемся на index
-        puts "Template not found: #{full_path}, rendering index instead."
         path = [controller.name, 'index'].join('/')
         full_path = Simpler.root.join(VIEW_BASE_PATH, "#{path}.html.erb")
       end
 
-      puts "Template path: #{path}"
       full_path
     end
 
