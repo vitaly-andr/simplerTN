@@ -2,7 +2,13 @@ class TestsController < Simpler::Controller
 
   def index
     @time = Time.now
-    @tests = Test.all
+    @tests = if params["category"]
+               category = Category.find(title: params["category"]) # find в Sequel возвращает массив
+               category ? category.tests : []
+             else
+               Test.all
+             end
+
     status HTTP_STATUS_OK
     header 'X-Simpler-Action', 'Index'
 
