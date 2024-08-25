@@ -56,19 +56,22 @@ module Simpler
     end
 
     def create_tables_if_not_exists
-      @db.create_table?(:categories) do
+      puts 'Creating tables...'
+      @db.drop_table?(:tests)
+      @db.drop_table?(:categories)
+
+      @db.create_table(:categories) do
         primary_key :id
         String :title, null: false
       end
 
-      @db.create_table?(:tests) do
+      @db.create_table(:tests) do
         primary_key :id
         String :title, null: false
         Integer :level, default: 0
-        foreign_key :category_id, :categories
+        foreign_key :category_id, :categories, on_delete: :cascade
       end
     end
-
     def seed_data_if_needed
       return if Test.count > 0
 
@@ -85,7 +88,9 @@ module Simpler
 
       # Устанавливаем ID для одного из тестов
       test = Test.find(title: 'Ruby Basics')
-      test.update(id: 101) if test
+      if test
+        @db.run("UPDATE tests SET id = 101 WHERE title = 'Ruby Basics'")
+      end
     end
 
     def create_category(title)

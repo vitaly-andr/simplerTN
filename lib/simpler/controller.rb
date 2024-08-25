@@ -35,6 +35,7 @@ module Simpler
 
       set_default_headers
       send(action)
+      @request.env['simpler.template'] ||= action
       write_response
 
       @response.finish
